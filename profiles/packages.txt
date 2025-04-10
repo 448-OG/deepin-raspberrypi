@@ -25,3 +25,5 @@ wpasupplicant
 dmidecode
 ntpsec-ntpdate
 linux-firmware
+ripgrep
+git

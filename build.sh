@@ -5,7 +5,7 @@ set -xe
 export DEBIAN_FRONTEND=noninteractive
 BUILD_TYPE="$1"
 ROOTFS="rootfs"
-TARGET_DEVICE=raspberrypi
+TARGET_DEVICE=23-x1e80100
 ARCH="arm64"
 DISKIMG="deepin-$TARGET_DEVICE.img"
 IMAGE_SIZE=$( [ "$BUILD_TYPE" == "desktop" ] && echo 12288 || echo 4096 )
@@ -188,7 +188,7 @@ sudo rm -f $TMP/etc/resolv.conf
 sudo cp /etc/resolv.conf $TMP/etc/resolv.conf
 # 安装树莓派的 raspi-config
 mkdir -p $TMP/etc/apt/sources.list.d
-echo "deb [trusted=yes] http://archive.raspberrypi.org/debian/ bookworm main" | sudo tee $TMP/etc/apt/sources.list.d/raspberrypi.list
+#MOD echo "deb [trusted=yes] http://archive.raspberrypi.org/debian/ bookworm main" | sudo tee $TMP/etc/apt/sources.list.d/raspberrypi.list
 
 # deepin 源里没 libfmt9，已经到 libfmt10 了，从 debian 下载 deb 包
 curl -L http://ftp.cn.debian.org/debian/pool/main/f/fmtlib/libfmt9_9.1.0+ds1-2_arm64.deb -o $TMP/tmp/libfmt9.deb
@@ -200,12 +200,14 @@ run_command_in_chroot $TMP "apt update -y && apt install -y \
 # raspi-config是树莓派的配置工具，firmware-brcm80211 包含无线网卡驱动
 run_command_in_chroot $TMP "apt install -y raspi-config raspberrypi-sys-mods firmware-brcm80211 raspi-firmware bluez-firmware"
 
-# 安装内核
-run_command_in_chroot $TMP "apt install -y \
-    linux-image-rpi-v8 \
-    linux-image-rpi-2712 \
-    linux-headers-rpi-v8 \
-    linux-headers-rpi-2712"
+#MOD # 安装内核
+# MODrun_command_in_chroot $TMP "apt install -y \
+# MOD    linux-image-rpi-v8 \
+# MOD    linux-image-rpi-2712 \
+#MOD     linux-headers-rpi-v8 \
+# MOD    linux-headers-rpi-2712"
+# Install the kernel
+run_command_in_chroot $TMP "apt install -y linux-image-6.12.9-arm64-desktop-rolling"
 
 # 在物理设备上需要添加 cmdline.txt 定义 Linux内核启动时的命令行参数
 echo "console=serial0,115200 console=tty1 root=LABEL=rootfs rootfstype=ext4 fsck.repair=yes rootwait quiet init=/usr/lib/raspberrypi-sys-mods/firstboot splash plymouth.ignore-serial-consoles" | sudo tee $TMP/boot/firmware/cmdline.txt
